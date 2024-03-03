@@ -1,134 +1,172 @@
 import { useState, useEffect } from "react";
-import { StyleSheet, Text, TextInput, View, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  TextInput,
+  Pressable,
+} from "react-native";
+
+// import LoginPage from "./LoginPage"; // Uncomment to see the Loginpage...
 
 export default function App() {
-  const [userData, setUserData] = useState({ email: "", password: "" });
-  const [flag, setFlag] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
+  // return <LoginPage />; // Uncomment to see the Loginpage && commend all the bottom part...
 
-  const handleEmail = (text) => {
-    setUserData({ ...userData, email: text });
-  };
-
-  const handlePassword = (text) => {
-    setUserData({ ...userData, password: text });
-    setPasswordTouched(true);
-  };
+  const [startTime, setStartTime] = useState(0);
+  const [endTime, setEndTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
 
   useEffect(() => {
-    if (
-      userData.email !== "" &&
-      userData.password.length >= 8 &&
-      /[A-Z]/.test(userData.password) &&
-      /[a-z]/.test(userData.password) &&
-      /\d/.test(userData.password) &&
-      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(userData.password)
-    ) {
-      setFlag(true);
+    let interval;
+    if (timerRunning) {
+      interval = setInterval(() => {
+        setElapsedTime((prevElapsedTime) => prevElapsedTime + 1);
+      }, 1000);
     } else {
-      setFlag(false);
+      clearInterval(interval);
     }
-  }, [userData.email, userData.password]);
+    return () => clearInterval(interval);
+  }, [timerRunning]);
+
+  const handleStartTime = (text) => {
+    setStartTime(parseInt(text));
+  };
+
+  const handleEndTime = (text) => {
+    setEndTime(parseInt(text));
+  };
+
+  const handleReset = () => {
+    setStartTime(0);
+    setEndTime(0);
+    setElapsedTime(0);
+    setTimerRunning(false);
+  };
+  useEffect(() => {
+    if (elapsedTime >= endTime - startTime) {
+      setTimerRunning(false);
+    }
+  }, [elapsedTime, startTime, endTime]);
+
+  const handleStart = () => {
+    setTimerRunning(true);
+  };
+
+  const handleStop = () => {
+    setTimerRunning(false);
+  };
+
+  const formatTime = (timeInSeconds) => {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
+    return `${hours < 10 ? "0" : ""}${hours}:${
+      minutes < 10 ? "0" : ""
+    }${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.inputView}>
+    <SafeAreaView style={styles.container}>
+      <Text
+        style={{
+          fontSize: 30,
+          marginBottom: 15,
+          paddingTop: 100,
+          color: "white",
+        }}
+      >
+        {formatTime(elapsedTime)}
+      </Text>
+      <View style={styles.inputContainer}>
         <TextInput
-          style={[styles.input, { marginBottom: 30 }]}
-          value={userData.email}
-          onChangeText={handleEmail}
-          placeholder={"Enter Email"}
-        />
-        <TextInput
-          value={userData.password}
-          onChangeText={handlePassword}
+          keyboardType="numeric"
           style={styles.input}
-          placeholder={"Enter Password"}
+          placeholder={"Start Time (In Seconds)"}
+          onChangeText={handleStartTime}
+          value={startTime.toString()}
         />
-        {!flag && passwordTouched && (
-          <Text
-            style={[
-              {
-                marginBottom: 30,
-                color: "red",
-                paddingTop: 3,
-                textAlign: "center",
-              },
-            ]}
-          >
-            Password should be atleast 8 characters and must contain at least
-            one uppercase letter, one lowercase letter, one number, and one
-            special character.
-          </Text>
-        )}
+        <TextInput
+          keyboardType="numeric"
+          style={styles.input}
+          placeholder={"End Time (In Seconds)"}
+          onChangeText={handleEndTime}
+          value={endTime.toString()}
+        />
       </View>
-
-      <View style={styles.btnView}>
+      <View style={styles.btnContainer}>
         <Pressable
-          disabled={!flag}
           style={({ pressed }) => [
-            styles.btnPress,
-            { backgroundColor: flag ? "#FF435B" : "#D4D8DE" },
-            { opacity: pressed ? 0.8 : 1, marginTop: 20 },
+            styles.pressableBtn,
+            { opacity: pressed ? 0.7 : 1 },
+            ,
+            { backgroundColor: "green" },
           ]}
+          onPress={handleStart}
         >
-          <Text style={styles.btnText}>Login</Text>
+          <Text style={[styles.pressBtnText, { color: "white" }]}>Start</Text>
         </Pressable>
-        {flag && (
-          <Pressable
-            style={({ pressed }) => [
-              styles.btnPress,
-              { backgroundColor: flag ? "#FF435B" : "#D4D8DE" },
-              { opacity: pressed ? 0.8 : 1 },
-            ]}
-          >
-            <Text style={styles.btnText}>Login With Google</Text>
-          </Pressable>
-        )}
-
-        {flag && (
-          <Pressable
-            style={({ pressed }) => [
-              styles.btnPress,
-              { backgroundColor: "#3C5B98", opacity: pressed ? 0.8 : 1 },
-            ]}
-          >
-            <Text style={styles.btnText}>Log in With Facebook</Text>
-          </Pressable>
-        )}
+        <Pressable
+          style={({ pressed }) => [
+            styles.pressableBtn,
+            { opacity: pressed ? 0.7 : 1 },
+            ,
+            { backgroundColor: "red" },
+          ]}
+          onPress={handleStop}
+        >
+          <Text style={[styles.pressBtnText, { color: "white" }]}>Stop</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [
+            styles.pressableBtn,
+            { opacity: pressed ? 0.7 : 1 },
+            { backgroundColor: "dodgerblue" },
+          ]}
+          onPress={handleReset}
+        >
+          <Text style={[styles.pressBtnText, { color: "white" }]}>Reset</Text>
+        </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 100,
+    backgroundColor: "grey",
+    alignItems: "center",
   },
-  inputView: {
-    paddingHorizontal: 20,
+  inputContainer: {
+    width: "80%",
   },
   input: {
     height: 50,
-    borderRadius: 20,
-    borderColor: "black",
+    borderColor: "grey",
     borderWidth: 1,
-    paddingLeft: 15,
-  },
-  btnView: {
-    paddingHorizontal: 20,
-  },
-  btnPress: {
-    height: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 20,
+    borderRadius: 10,
+    paddingLeft: 12,
     marginBottom: 20,
+    backgroundColor: "#fff",
   },
-  btnText: {
-    fontSize: 18,
-    color: "white",
+  btnContainer: {
+    flex: 1,
+    width: "80%",
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  pressableBtn: {
+    width: "30%",
+    height: 40,
+    borderColor: "grey",
+    borderWidth: 1,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pressBtnText: {
+    fontSize: 16,
   },
 });
