@@ -42,7 +42,12 @@ const postData = [
   },
 ];
 
-const Post = ({ posts, showFullText, toggleShowFullText }) => {
+const Post = ({ posts }) => {
+  const [showFullText, setShowFullText] = useState(false);
+
+  const toggleShowFullText = () => {
+    setShowFullText(!showFullText);
+  };
   return (
     <View style={styles.post}>
       <View style={styles.postHead}>
@@ -132,12 +137,6 @@ const Post = ({ posts, showFullText, toggleShowFullText }) => {
 };
 
 export default function App() {
-  const [showFullText, setShowFullText] = useState(false);
-
-  const toggleShowFullText = () => {
-    setShowFullText(!showFullText);
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.navbar}>
@@ -184,14 +183,8 @@ export default function App() {
             }}
           />
         )}
-        renderItem={({ item }) => (
-          <Post
-            posts={item}
-            showFullText={showFullText}
-            toggleShowFullText={toggleShowFullText}
-          />
-        )}
-        keyExtractor={(post) => post.id.toString()}
+        renderItem={({ item }) => <Post posts={item} />}
+        keyExtractor={(item) => item.id.toString()}
       />
 
       <View style={styles.footer}>
