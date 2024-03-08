@@ -1,15 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useRoute } from "@react-navigation/native";
 
-
 const SingleNotification = () => {
   const route = useRoute();
-  const { notificationId } = route.params;
+  const { notificationInfo } = route.params;
   return (
     <View style={styles.singleNotificationMain}>
-      <Text style={{ color: "white" }}>
-        Single Notification {notificationId}
-      </Text>
+      <Text style={{ color: "white" }}>{notificationInfo.notification}</Text>
     </View>
   );
 };

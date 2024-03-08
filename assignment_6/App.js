@@ -6,6 +6,7 @@ import Jobs from "./Components/Jobs";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import SingleNotification from "./Components/SingleNotification";
+import SingleNotificationHeader from "./Components/SingleNotificationHeader";
 import { StyleSheet, View } from "react-native";
 import "react-native-gesture-handler";
 
@@ -25,14 +26,16 @@ const NotificationStackScreen = () => {
   return (
     <NotificationStack.Navigator>
       <NotificationStack.Screen
-        name="Notification"
+        name="AllNotification"
         component={Notification}
-        options={{ headerShown: false }}
+        options={{ header: () => <Navbar /> }}
       />
       <NotificationStack.Screen
         name="SingleNotification"
         component={SingleNotification}
-        options={{ headerShown: false }}
+        options={{
+          header: () => <SingleNotificationHeader />,
+        }}
       />
     </NotificationStack.Navigator>
   );
@@ -57,7 +60,7 @@ const MainTabs = () => {
         component={Posts}
       />
       <Tab.Screen
-        options={{ header: () => <Navbar /> }}
+        options={{ headerShown: false }}
         name="Notification"
         component={NotificationStackScreen}
       />
@@ -98,7 +101,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1A1F22",
-    paddingTop: 30,
+    paddingTop: 40,
     paddingBottom: 20,
   },
 });
