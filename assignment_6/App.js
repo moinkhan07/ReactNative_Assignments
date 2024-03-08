@@ -14,6 +14,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
+import CustomDrawerContent from "./Components/CustomDrawerContent";
 
 const NotificationStack = createStackNavigator();
 const Stack = createStackNavigator();
@@ -89,7 +90,15 @@ export default function App() {
   return (
     <NavigationContainer>
       <View style={styles.container}>
-        <Drawer.Navigator screenOptions={{ headerShown: false }}>
+        <Drawer.Navigator
+          drawerContent={(props) => <CustomDrawerContent {...props} />}
+          screenOptions={{
+            headerShown: false,
+          }}
+          drawerStyle={{
+            width: 400,
+          }}
+        >
           <Drawer.Screen name="Main" component={MainStack} />
         </Drawer.Navigator>
       </View>
