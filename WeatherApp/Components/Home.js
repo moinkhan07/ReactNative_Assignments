@@ -6,76 +6,135 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
+import React, { useState, useEffect } from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 
+import axios from "axios";
+
+const API_KEY = "e0747255b81f0cf228d13fc402815b24";
+const city = "Mumbai";
+
 const HourlyForecastsScreen = () => {
+  const [hourlyData, setHourlyData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`
+        );
+        const { lat, lon } = response.data[0];
+        const weatherResponse = await axios.get(
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+        );
+        setHourlyData(weatherResponse.data.list);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const getCurrentDateForecasts = () => {
+    if (!hourlyData) {
+      return [];
+    }
+    const currentDate = new Date().toDateString();
+    return hourlyData.filter(
+      (forecast) => new Date(forecast.dt * 1000).toDateString() === currentDate
+    );
+  };
+
+  const getFormattedHour = (hour) => {
+    return hour % 12 || 12;
+  };
+
+  const getAmPm = (hour) => {
+    return hour >= 12 ? "PM" : "AM";
+  };
+
   return (
     <ScrollView
       horizontal={true}
       contentContainerStyle={styles.scrollViewContent}
       style={styles.hourlyDailyTemp}
     >
-      <View style={styles.weatherTemp}>
-        <Text style={{ color: "white", fontSize: 14 }}>12 PM</Text>
-        <Image
-          style={{ width: 55, height: 55, marginVertical: 6 }}
-          source={require("../assets/MainLogo.png")}
-        />
-        <Text style={{ color: "white", fontSize: 15 }}>19°</Text>
-      </View>
-      <View style={styles.weatherTemp}>
-        <Text style={{ color: "white", fontSize: 14 }}>12 PM</Text>
-        <Image
-          style={{ width: 55, height: 55, marginVertical: 6 }}
-          source={require("../assets/MainLogo.png")}
-        />
-        <Text style={{ color: "white", fontSize: 15 }}>19°</Text>
-      </View>
-      <View style={styles.weatherTemp}>
-        <Text style={{ color: "white", fontSize: 14 }}>12 PM</Text>
-        <Image
-          style={{ width: 55, height: 55, marginVertical: 6 }}
-          source={require("../assets/MainLogo.png")}
-        />
-        <Text style={{ color: "white", fontSize: 15 }}>19°</Text>
-      </View>
-      <View style={styles.weatherTemp}>
-        <Text style={{ color: "white", fontSize: 14 }}>12 PM</Text>
-        <Image
-          style={{ width: 55, height: 55, marginVertical: 6 }}
-          source={require("../assets/MainLogo.png")}
-        />
-        <Text style={{ color: "white", fontSize: 15 }}>19°</Text>
-      </View>
-      <View style={styles.weatherTemp}>
-        <Text style={{ color: "white", fontSize: 14 }}>12 PM</Text>
-        <Image
-          style={{ width: 55, height: 55, marginVertical: 6 }}
-          source={require("../assets/MainLogo.png")}
-        />
-        <Text style={{ color: "white", fontSize: 15 }}>19°</Text>
-      </View>
+      {getCurrentDateForecasts().map((item, index) => (
+        <View key={index} style={styles.weatherTemp}>
+          <Text style={{ color: "white", fontSize: 14 }}>
+            {getFormattedHour(new Date(item.dt * 1000).getHours())}
+            {getAmPm(new Date(item.dt * 1000).getHours())}
+          </Text>
+          <Image
+            style={{ width: 55, height: 55, marginVertical: 6 }}
+            source={require("../assets/MainLogo.png")}
+          />
+          <Text style={{ color: "white", fontSize: 15 }}>
+            {Math.round(item.main.temp - 273.15)}°
+          </Text>
+        </View>
+      ))}
     </ScrollView>
   );
 };
 
 const DailyForecastsScreen = () => {
+  const [dailyForecasts, setDailyForecasts] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `http://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}`
+        );
+        const dailyData = response.data.list.filter(
+          (forecast, index) => index % 8 === 0
+        );
+        setDailyForecasts(dailyData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getDayOfWeek = (dateString) => {
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const date = new Date(dateString);
+    return days[date.getDay()];
+  };
+
   return (
     <ScrollView
       horizontal={true}
       contentContainerStyle={styles.scrollViewContent}
       style={styles.hourlyDailyTemp}
     >
-      <View style={styles.weatherTemp}>
-        <Text style={{ color: "white", fontSize: 14 }}>12</Text>
-        <Image
-          style={{ width: 55, height: 55, marginVertical: 6 }}
-          source={require("../assets/MainLogo.png")}
-        />
-        <Text style={{ color: "white", fontSize: 15 }}>19°</Text>
-      </View>
+      {dailyForecasts.map((forecast, index) => (
+        <View key={index} style={styles.weatherTemp}>
+          <Text style={{ color: "white", fontSize: 13 }}>
+            {getDayOfWeek(forecast.dt_txt)}
+          </Text>
+          <Image
+            style={{ width: 55, height: 55, marginVertical: 6 }}
+            source={require("../assets/MainLogo.png")}
+          />
+          <Text style={{ color: "white", fontSize: 15 }}>
+            {Math.round(forecast.main.temp - 273.15)}°
+          </Text>
+        </View>
+      ))}
     </ScrollView>
   );
 };
@@ -90,7 +149,13 @@ const TabBtn = () => {
         onPress={() => navigation.navigate("HourlyForecasts")}
         style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
       >
-        <Text style={{ color: "#C0C0C0" }}>Hourly Forecasts</Text>
+        <Text
+          style={{
+            color: "#C0C0C0",
+          }}
+        >
+          Hourly Forecasts
+        </Text>
       </Pressable>
       <Pressable
         onPress={() => navigation.navigate("DailyForecasts")}
@@ -103,6 +168,26 @@ const TabBtn = () => {
 };
 
 const Home = () => {
+  const [weatherData, setWeatherData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`
+        );
+        const { lat, lon } = response.data[0];
+        const weatherResponse = await axios.get(
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+        );
+        setWeatherData(weatherResponse.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <LinearGradient
       colors={["rgb(11,5,81)", "rgb(84,37,154)", "rgb(164,100,206)"]}
@@ -115,12 +200,22 @@ const Home = () => {
             style={styles.homeLogo}
             source={require("../assets/MainLogo.png")}
           />
-          <Text style={{ color: "white", fontSize: 25 }}>Mumbai</Text>
+          <Text style={{ color: "white", fontSize: 25 }}>{city}</Text>
           <View style={{ flexDirection: "row" }}>
-            <Text style={{ color: "white", fontSize: 45 }}>20</Text>
-            <Text style={{ color: "white", fontSize: 28 }}>°</Text>
+            {weatherData && weatherData.list && weatherData.list[0] && (
+              <>
+                <Text style={{ color: "white", fontSize: 45 }}>
+                  {Math.round(weatherData.list[0].main.temp - 273.15)}
+                </Text>
+                <Text style={{ color: "white", fontSize: 28 }}>°C</Text>
+              </>
+            )}
           </View>
-          <Text style={{ color: "white", fontSize: 18 }}>Thunder Rain</Text>
+          {weatherData && weatherData.list && weatherData.list[0] && (
+            <Text style={{ color: "white", fontSize: 18 }}>
+              {weatherData.list[0].weather[0].description}
+            </Text>
+          )}
         </View>
       </View>
 
